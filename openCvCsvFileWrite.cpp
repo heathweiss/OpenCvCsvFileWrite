@@ -34,7 +34,7 @@ int main ()
 
 /*
 Writes all the image data to file, with multiple images to represent scans at each target degree.
-Sends info about what degree, as the first int of every row, for each of the degree datasets, instead of having it separated.
+Sends info about what degree, as the first int of the 1st row, for each of the degree datasets.
 Put in on every row to make parsing easier.
 */
 void writeFullDataWithDegreesToFile()
@@ -48,7 +48,7 @@ void writeFullDataWithDegreesToFile()
 
   for (int row = 0; row < img.size().height; row++)
     { if (row > 0) os << ";";
-      os << "0 "; //append degree info
+      if (row == 0)   os << "0 "; //append degree info
       for (int col = 0; col < img.size().width; col++)
   	{ int pixel = img.at<uchar>(row,col);
           if (col > 0) os << " "; 
@@ -62,10 +62,13 @@ void writeFullDataWithDegreesToFile()
 
       for (int row = 0; row < img.size().height; row++)
         { if (row > 0) os << ";";
-          if (scan == 1) os << "90 "; //append degree info
-          if (scan == 2) os << "180 "; //append degree info
-          if (scan == 3) os << "270 "; //append degree info
-          if (scan == 4) os << "360 "; //append degree info
+          if (row == 0) 
+	    { if (scan == 1) os << "90 "; //append degree info
+              if (scan == 2) os << "180 "; //append degree info
+              if (scan == 3) os << "270 "; //append degree info
+              if (scan == 4) os << "360 "; //append degree info
+            }
+          
           for (int col = 0; col < img.size().width; col++)
             { int pixel = img.at<uchar>(row,col);
               if (col > 0) os << " "; 
