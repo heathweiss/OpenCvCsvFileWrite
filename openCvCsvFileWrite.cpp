@@ -16,7 +16,7 @@ int writeMinStringsToFile (std::string inString,const char* fileName);
 
 //func declarations for full data
 void viewSingleRow (int row);
-void writeFullDataToFile();
+void writeFullDataWithDegreesAndReproduce0DegreeToFile();
 void writeFullDataWithDegreesToFile();
 
 int main ()
@@ -25,12 +25,76 @@ int main ()
   //writeMinStringsToFile(convertMinAllRowsToString(),"mins.txt");
   //viewSingleRow (100);
   //writeFullDataToFile();
-  writeFullDataWithDegreesToFile();
+  //writeFullDataWithDegreesToFile();
+  writeFullDataWithDegreesAndReproduce0DegreeToFile();
  
  return 0;
 }
 
 /////////////////////////////////////// functions for full data ////////////////////////////////////
+/* 
+Writes all the image data to file, with multiple images to represent scans at each target degree.
+Sends info about what degree, as the first int of the 1st row, for each of the degree datasets.
+
+It attaches the 0 degree onto the end as 360 degree, instead of reading it in from a file.
+At this point, it does not read in from a file each time, as I am not at that point yet.
+ */
+void writeFullDataWithDegreesAndReproduce0DegreeToFile()
+{ Mat img = imread("backScratcherFlipped.jpg", CV_LOAD_IMAGE_GRAYSCALE );
+  std::filebuf fb;
+  fb.open ("fullDataWithDegrees.txt",std::ios::out);
+  std::ostream os(&fb);
+
+  //need to send the data 5 times for a simulated 0,90,180,270,360 degree scan.
+  //send it 1st time alone, so it does not have a $ appended to it
+
+  for (int row = 0; row < img.size().height; row++)
+    { if (row > 0) os << ";";
+      if (row == 0)   os << "0 "; //append degree info
+      for (int col = 0; col < img.size().width; col++)
+  	{ int pixel = img.at<uchar>(row,col);
+          if (col > 0) os << " "; 
+          os << pixel;
+        }
+    }
+
+  //now send it 3 more times with $ appended to it
+  for (int scan = 1; scan <4; scan++)
+    { os << "$";
+    
+      for (int row = 0; row < img.size().height; row++)
+        { if (row > 0) os << ";";
+          if (row == 0) 
+	    { if (scan == 1) os << "90 "; //append degree info
+              if (scan == 2) os << "180 "; //append degree info
+              if (scan == 3) os << "270 "; //append degree info
+            }
+          
+          for (int col = 0; col < img.size().width; col++)
+            { int pixel = img.at<uchar>(row,col);
+              if (col > 0) os << " "; 
+              os << pixel;
+            }
+        }
+    }
+
+  //resend 0 degree as 360 to close off the scan.
+  //This guarantees that 360 and 0 are the same
+  os << "$";
+  for (int row = 0; row < img.size().height; row++)
+    { if (row > 0) os << ";";
+      if (row == 0)   os << "360 "; //append degree info
+      for (int col = 0; col < img.size().width; col++)
+  	{ int pixel = img.at<uchar>(row,col);
+          if (col > 0) os << " "; 
+          os << pixel;
+        }
+    }
+  
+   
+  fb.close();
+
+}
 
 /*
 Writes all the image data to file, with multiple images to represent scans at each target degree.
@@ -82,45 +146,7 @@ void writeFullDataWithDegreesToFile()
 }
 
 
-/*
-Writes all the image data to file, with multiple images to represent scans at each target degree.
-Does not send info about what degree.
-*/
-void writeFullDataToFile()
-{ Mat img = imread("backScratcherFlipped.jpg", CV_LOAD_IMAGE_GRAYSCALE );
-  std::filebuf fb;
-  fb.open ("fullData.txt",std::ios::out);
-  std::ostream os(&fb);
 
-  //need to send the data 5 times for a simulated 0,90,180,270,360 degree scan.
-  //send it 1st time alone, so it does not have a $ appended to it
-
-  for (int row = 0; row < img.size().height; row++)
-    { if (row > 0) os << ";";
-      for (int col = 0; col < img.size().width; col++)
-  	{ int pixel = img.at<uchar>(row,col);
-          if (col > 0) os << " "; 
-          os << pixel;
-        }
-    }
-
-  //now send it 4 more times with $ appended to it
-  for (int scan = 1; scan <5; scan++)
-    { os << "$";
-
-      for (int row = 0; row < img.size().height; row++)
-        { if (row > 0) os << ";";
-          for (int col = 0; col < img.size().width; col++)
-            { int pixel = img.at<uchar>(row,col);
-              if (col > 0) os << " "; 
-              os << pixel;
-            }
-        }
-    }
-    
-  fb.close();
-
-}
 
 
 void viewSingleRow (int row)
